@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Todo</string>
+    <string name="title_activity_todo_list">Todo</string>
+    <string name="title_activity_todo_details">TodoDetails</string>
+    <string name="create">Создать</string>
+    <string name="back">Назад</string>
+    <string name="save">Сохранить</string>
+    <string name="new_document">Новая заметка</string>
+    <string name="new_task">+</string>
+
+</resources>
