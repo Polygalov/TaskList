@@ -8,6 +8,9 @@
     <string name="back">Назад</string>
     <string name="save">Сохранить</string>
     <string name="new_document">Новая заметка</string>
-    <string name="new_task">+</string>
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отмена</string>
+    <string name="confirm_delete">Вы действительно хотите удалить заметку?</string>
+    <string name="empty_list">(нет заметок)</string>
 
 </resources>

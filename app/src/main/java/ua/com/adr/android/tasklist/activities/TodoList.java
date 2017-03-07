@@ -3,28 +3,19 @@ package ua.com.adr.android.tasklist.activities;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-
 import ua.com.adr.android.tasklist.R;
 import ua.com.adr.android.tasklist.objects.TodoDocument;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SearchView;
-import android.widget.Toast;
 
 public class TodoList extends Activity {
 
@@ -34,7 +25,8 @@ public class TodoList extends Activity {
 	private ListView listTasks;
 
 	private ArrayAdapter<TodoDocument> arrayAdapter;
-	private static List<TodoDocument> listDocument = new ArrayList<TodoDocument>();
+
+	private static ArrayList<TodoDocument> listDocuments = new ArrayList<TodoDocument>();
 
 	@SuppressLint("NewApi")
 	@Override
@@ -46,6 +38,8 @@ public class TodoList extends Activity {
 
 		listTasks.setOnItemClickListener(new ListViewClickListener());
 
+		listTasks.setEmptyView(findViewById(R.id.emptyView));
+
 		getActionBar().setDisplayHomeAsUpEnabled(false);
 
 		fillTodoList();
@@ -53,19 +47,7 @@ public class TodoList extends Activity {
 	}
 
 	private void fillTodoList() {
-
-		// ��������
-		TodoDocument d1 = new TodoDocument("s1", "c1", null);
-		TodoDocument d2 = new TodoDocument("s2", "c2", null);
-		TodoDocument d3 = new TodoDocument("s3", "c3", null);
-
-		List<TodoDocument> listDocument = new ArrayList<TodoDocument>();
-		listDocument.add(d1);
-		listDocument.add(d2);
-		listDocument.add(d3);
-
-		arrayAdapter = new ArrayAdapter<TodoDocument>(getApplicationContext(),
-				R.layout.listview_row, listDocument);
+		arrayAdapter = new ArrayAdapter<TodoDocument>(this, R.layout.listview_row, listDocuments);
 		listTasks.setAdapter(arrayAdapter);
 	}
 
@@ -79,16 +61,16 @@ public class TodoList extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.add_task: {
-			TodoDocument todoDocument = new TodoDocument();
-			todoDocument.setName(getResources()
-					.getString(R.string.new_document));
-			showDocument(todoDocument);
-			return true;
-		}
+			case R.id.new_task: {
+				TodoDocument todoDocument = new TodoDocument();
+				todoDocument.setName(getResources()
+						.getString(R.string.new_document));
+				showDocument(todoDocument);
+				return true;
+			}
 
-		default:
-			break;
+			default:
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -102,26 +84,61 @@ public class TodoList extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == TODO_DETAILS_REQUEST) {
+
+			TodoDocument todoDocument = null;
 			switch (resultCode) {
-			case RESULT_CANCELED:
-				Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show();
-				break;
+				case RESULT_CANCELED:
 
-			case TodoDetails.RESULT_SAVE:
-				Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
-				break;
+					break;
 
-			default:
-				break;
+				case TodoDetails.RESULT_SAVE:
+					todoDocument = (TodoDocument) data
+							.getSerializableExtra(TODO_DOCUMENT);
+					todoDocument.setCreateDate(new Date());
+					addDocument(todoDocument);
+					break;
+
+				case TodoDetails.RESULT_DELETE:
+					todoDocument = (TodoDocument) data
+							.getSerializableExtra(TODO_DOCUMENT);
+					deleteDocument((TodoDocument) data
+							.getSerializableExtra(TODO_DOCUMENT));
+					break;
+
+				default:
+					break;
 			}
 		}
+	}
+
+
+	@SuppressLint("NewApi")
+	private void addDocument(TodoDocument todoDocument) {
+
+		if (todoDocument.getNumber()==null){// если документ новый, только создается
+			listDocuments.add(todoDocument);
+		}else{// если это старый, ранее уже созданный документ
+			listDocuments.set(todoDocument.getNumber(), todoDocument);
+		}
+
+		Collections.sort(listDocuments);
+		arrayAdapter.notifyDataSetChanged();
+
+	}
+
+	@SuppressLint("NewApi")
+	private void deleteDocument(TodoDocument todoDocument) {
+		listDocuments.remove(todoDocument.getNumber().intValue());
+		arrayAdapter.notifyDataSetChanged();
 	}
 
 	class ListViewClickListener implements OnItemClickListener {
 
 		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+								long id) {
 			TodoDocument todoDocument = (TodoDocument) parent.getAdapter().getItem(position);
+			todoDocument.setNumber(position);
 			showDocument(todoDocument);
 		}
 
