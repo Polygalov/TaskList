@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import ua.com.adr.android.tasklist.R;
+import ua.com.adr.android.tasklist.objects.TodoAdapter;
 import ua.com.adr.android.tasklist.objects.TodoDocument;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -24,7 +25,7 @@ public class TodoList extends Activity {
 
 	private ListView listTasks;
 
-	private ArrayAdapter<TodoDocument> arrayAdapter;
+	private TodoAdapter arrayAdapter;
 
 	private static ArrayList<TodoDocument> listDocuments = new ArrayList<TodoDocument>();
 
@@ -47,7 +48,7 @@ public class TodoList extends Activity {
 	}
 
 	private void fillTodoList() {
-		arrayAdapter = new ArrayAdapter<TodoDocument>(this, R.layout.listview_row, listDocuments);
+		arrayAdapter = new TodoAdapter(this, listDocuments);
 		listTasks.setAdapter(arrayAdapter);
 	}
 
