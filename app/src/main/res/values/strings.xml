@@ -12,5 +12,6 @@
     <string name="cancel">Отмена</string>
     <string name="confirm_delete">Вы действительно хотите удалить заметку?</string>
     <string name="empty_list">(нет заметок)</string>
+    <string name="search_title">Поиск</string>
 
 </resources>

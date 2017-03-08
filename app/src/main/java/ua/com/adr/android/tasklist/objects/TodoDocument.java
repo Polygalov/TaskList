@@ -6,7 +6,7 @@ import java.util.Date;
 public class TodoDocument implements Serializable, Comparable<TodoDocument> {
 
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = -7367289796391092618L;
 
@@ -57,7 +57,7 @@ public class TodoDocument implements Serializable, Comparable<TodoDocument> {
 	public void setNumber(Integer number) {
 		this.number = number;
 	}
-
+	
 
 	@Override
 	public String toString() {

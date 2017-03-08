@@ -1,6 +1,7 @@
 package ua.com.adr.android.tasklist.activities;
 
 import ua.com.adr.android.tasklist.R;
+import ua.com.adr.android.tasklist.objects.AppContext;
 import ua.com.adr.android.tasklist.objects.TodoDocument;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
@@ -13,6 +14,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+
 public class TodoDetails extends Activity {
 
 	public static final int RESULT_SAVE = 100;
@@ -23,18 +28,70 @@ public class TodoDetails extends Activity {
 	private EditText txtTodoDetails;
 	private TodoDocument todoDocument;
 
+	private ArrayList<TodoDocument> listDocuments;
+
+	private int actionType;
+	private int docIndex;
+
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_todo_details);
+
 		txtTodoDetails = (EditText) findViewById(R.id.txtTodoDetails);
-		todoDocument = (TodoDocument) getIntent().getSerializableExtra(
-				TodoList.TODO_DOCUMENT);
-		// setTitle(todoDocument.getName());
-		txtTodoDetails.setText(todoDocument.getContent());
+
+		listDocuments = ((AppContext) getApplicationContext())
+				.getListDocuments();
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
+
+		actionType = getIntent().getExtras().getInt(AppContext.ACTION_TYPE);
+
+		prepareDocument(actionType);
+	}
+
+	private void prepareDocument(int actionType) {
+		switch (actionType) {
+			case AppContext.ACTION_NEW_TASK:
+				todoDocument = new TodoDocument();
+				break;
+
+			case AppContext.ACTION_UPDATE:
+				docIndex = getIntent().getExtras().getInt(AppContext.DOC_INDEX);
+				todoDocument = listDocuments.get(docIndex);
+				txtTodoDetails.setText(todoDocument.getContent());
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	private void saveDocument() {
+		todoDocument.setName(getDocumentName());
+
+		if (actionType == AppContext.ACTION_UPDATE) {
+
+			// если изменился текст, тогда обновить дату сохранения
+			// если документ старый и текст не изменился
+			if (txtTodoDetails.getText().toString().trim().equals(todoDocument.getContent())) {
+				finish();
+				return;
+			}
+		} else if (actionType == AppContext.ACTION_NEW_TASK) {
+			listDocuments.add(todoDocument);
+		}
+
+		todoDocument.setCreateDate(new Date());
+		todoDocument.setContent(txtTodoDetails.getText().toString().trim());
+
+		Collections.sort(listDocuments);
+
+		updateIndexes();
+
+		finish();
+
 	}
 
 	@Override
@@ -44,9 +101,8 @@ public class TodoDetails extends Activity {
 		return true;
 	}
 
-	private void saveDocument(){
+	private String getDocumentName() {
 		StringBuilder sb = new StringBuilder(txtTodoDetails.getText());
-
 
 		if (sb.length() > NAME_LENGTH) {
 			sb.delete(NAME_LENGTH, sb.length()).append("...");
@@ -54,17 +110,26 @@ public class TodoDetails extends Activity {
 
 		String tmpName = sb.toString().trim().split("\n")[0];
 
-		String name = (tmpName.length() > 0) ? tmpName : todoDocument
-				.getName();
+		String name = (tmpName.length() > 0) ? tmpName : getResources()
+				.getString(R.string.new_document);
 
-		todoDocument.setName(name);
+		return name;
+	}
 
-		// если у документа не редатировали текст (т.е. открыли уже ранее созданный документ)
-		if (todoDocument.getContent()!=null && txtTodoDetails.getText().toString().equals(todoDocument.getContent())){
-			setResult(RESULT_CANCELED, getIntent());
-		}else{
-			todoDocument.setContent(sb.toString());
-			setResult(RESULT_SAVE, getIntent());
+	@SuppressLint("NewApi")
+	private void deleteDocument(TodoDocument todoDocument) {
+		if (actionType == AppContext.ACTION_UPDATE) {
+			listDocuments.remove(docIndex);
+			updateIndexes();
+		}
+
+		finish();
+	}
+
+	private void updateIndexes() {
+		int i = 0;
+		for (TodoDocument doc : listDocuments) {
+			doc.setNumber(i++);
 		}
 	}
 
@@ -74,11 +139,11 @@ public class TodoDetails extends Activity {
 			case android.R.id.home: {
 
 				if (txtTodoDetails.getText().toString().trim().length() == 0) {
-					setResult(RESULT_CANCELED);
+					finish();
 				} else {
 					saveDocument();
 				}
-				finish();
+
 				return true;
 			}
 
@@ -86,7 +151,6 @@ public class TodoDetails extends Activity {
 
 				saveDocument();
 
-				finish();
 				return true;
 			}
 
@@ -98,8 +162,7 @@ public class TodoDetails extends Activity {
 				builder.setPositiveButton(R.string.delete,
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
-								setResult(RESULT_DELETE, getIntent());
-								finish();
+								deleteDocument(todoDocument);
 
 							}
 						});
