@@ -6,11 +6,14 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme"
+        android:name="ua.com.adr.android.tasklist.objects.AppContext"
+        >
         <activity
             android:name="ua.com.adr.android.tasklist.activities.TodoList"
             android:label="@string/title_activity_todo_list"
             android:windowSoftInputMode="stateHidden"
+
 
             >
             <intent-filter>
@@ -28,6 +31,7 @@
             android:name="ua.com.adr.android.tasklist.activities.TodoDetails"
             android:label="@string/title_activity_todo_details"
             android:windowSoftInputMode="stateHidden"
+            android:launchMode="singleTop"
             >
         </activity>
     </application>

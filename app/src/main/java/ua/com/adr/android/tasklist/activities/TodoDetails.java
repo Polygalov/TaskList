@@ -1,6 +1,7 @@
 package ua.com.adr.android.tasklist.activities;
 
 import ua.com.adr.android.tasklist.R;
+import ua.com.adr.android.tasklist.enums.PriorityType;
 import ua.com.adr.android.tasklist.objects.AppContext;
 import ua.com.adr.android.tasklist.objects.TodoDocument;
 import android.annotation.SuppressLint;
@@ -32,6 +33,9 @@ public class TodoDetails extends Activity {
 
 	private int actionType;
 	private int docIndex;
+
+	private MenuItem menuPriority;
+	private PriorityType currentPriorityType;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -66,6 +70,8 @@ public class TodoDetails extends Activity {
 			default:
 				break;
 		}
+
+		currentPriorityType = todoDocument.getPriorityType();
 	}
 
 	private void saveDocument() {
@@ -75,20 +81,25 @@ public class TodoDetails extends Activity {
 
 			// если изменился текст, тогда обновить дату сохранения
 			// если документ старый и текст не изменился
-			if (txtTodoDetails.getText().toString().trim().equals(todoDocument.getContent())) {
-				finish();
-				return;
+			if (!txtTodoDetails.getText().toString().trim()
+					.equals(todoDocument.getContent())) {
+				todoDocument.setContent(txtTodoDetails.getText().toString()
+						.trim());
+				todoDocument.setCreateDate(new Date());
 			}
+
+			// если приоритет изменился
+			if (currentPriorityType != todoDocument.getPriorityType()) {
+				todoDocument.setPriorityType(currentPriorityType);
+				todoDocument.setCreateDate(new Date());
+			}
+
 		} else if (actionType == AppContext.ACTION_NEW_TASK) {
+			todoDocument.setCreateDate(new Date());
+			todoDocument.setContent(txtTodoDetails.getText().toString().trim());
+			todoDocument.setPriorityType(currentPriorityType);
 			listDocuments.add(todoDocument);
 		}
-
-		todoDocument.setCreateDate(new Date());
-		todoDocument.setContent(txtTodoDetails.getText().toString().trim());
-
-		Collections.sort(listDocuments);
-
-		updateIndexes();
 
 		finish();
 
@@ -98,6 +109,13 @@ public class TodoDetails extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.todo_details, menu);
+
+		menuPriority = menu.findItem(R.id.menu_priority);
+
+		MenuItem menuItem = menuPriority.getSubMenu().getItem(
+				todoDocument.getPriorityType().getIndex());
+		menuItem.setChecked(true);
+
 		return true;
 	}
 
@@ -120,17 +138,9 @@ public class TodoDetails extends Activity {
 	private void deleteDocument(TodoDocument todoDocument) {
 		if (actionType == AppContext.ACTION_UPDATE) {
 			listDocuments.remove(docIndex);
-			updateIndexes();
 		}
 
 		finish();
-	}
-
-	private void updateIndexes() {
-		int i = 0;
-		for (TodoDocument doc : listDocuments) {
-			doc.setNumber(i++);
-		}
 	}
 
 	@Override
@@ -174,6 +184,15 @@ public class TodoDetails extends Activity {
 						});
 				AlertDialog dialog = builder.create();
 				dialog.show();
+
+				return true;
+			}
+
+			case R.id.menu_priority_low:
+			case R.id.menu_priority_middle:
+			case R.id.menu_priority_high: {
+				item.setChecked(true);
+				currentPriorityType = PriorityType.values()[Integer.valueOf(item.getTitleCondensed().toString())];
 
 				return true;
 			}

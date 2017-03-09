@@ -5,6 +5,7 @@
     <string name="title_activity_todo_list">Todo</string>
     <string name="title_activity_todo_details">TodoDetails</string>
     <string name="create">Создать</string>
+    <string name="sort">Сортировать</string>
     <string name="back">Назад</string>
     <string name="save">Сохранить</string>
     <string name="new_document">Новая заметка</string>
@@ -13,5 +14,12 @@
     <string name="confirm_delete">Вы действительно хотите удалить заметку?</string>
     <string name="empty_list">(нет заметок)</string>
     <string name="search_title">Поиск</string>
+    <string name="sort_date">По дате</string>
+    <string name="sort_name">По названию</string>
+    <string name="sort_priority">По приоритету</string>
+    <string name="priority">Приоритет</string>
+    <string name="low">Низкий</string>
+    <string name="middle">Средний</string>
+    <string name="high">Высокий</string>
 
 </resources>

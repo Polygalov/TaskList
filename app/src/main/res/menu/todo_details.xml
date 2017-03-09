@@ -1,4 +1,32 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+     <item
+        android:id="@+id/menu_priority"
+        android:icon="@drawable/priority_icon_selector"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/priority">
+        <menu>
+            <group android:checkableBehavior="single" >
+                <item
+                    android:id="@+id/menu_priority_low"
+                    android:checked="true"
+                    android:title="@string/low"
+                    android:titleCondensed="0"               
+                    />
+                <item
+                    android:id="@+id/menu_priority_middle"
+                    android:title="@string/middle"
+                    android:titleCondensed="1"
+                    />
+                <item
+                    android:id="@+id/menu_priority_high"
+                    android:title="@string/high"
+                    android:titleCondensed="2"
+                    />
+            </group>
+        </menu>
+    </item>
+    
     <item android:id="@+id/delete" android:title="@string/save" android:showAsAction="always" android:icon="@drawable/ic_delete"></item>
     <item android:id="@+id/save" android:title="@string/save" android:showAsAction="always" android:icon="@drawable/ic_save"></item>
 </menu>

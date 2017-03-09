@@ -3,10 +3,12 @@ package ua.com.adr.android.tasklist.objects;
 import java.io.Serializable;
 import java.util.Date;
 
-public class TodoDocument implements Serializable, Comparable<TodoDocument> {
+import ua.com.adr.android.tasklist.enums.PriorityType;
+
+public class TodoDocument implements Serializable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7367289796391092618L;
 
@@ -14,13 +16,15 @@ public class TodoDocument implements Serializable, Comparable<TodoDocument> {
 		// TODO Auto-generated constructor stub
 	}
 
-	public TodoDocument(String name, String content, Date createDate) {
+	public TodoDocument(String name, String content, Date createDate, PriorityType priorityType) {
 		super();
 		this.name = name;
 		this.content = content;
 		this.createDate = createDate;
+		this.priorityType = priorityType;
 	}
 
+	private PriorityType priorityType = PriorityType.LOW;
 	private Integer number;
 	private String name;
 	private String content;
@@ -57,7 +61,15 @@ public class TodoDocument implements Serializable, Comparable<TodoDocument> {
 	public void setNumber(Integer number) {
 		this.number = number;
 	}
-	
+
+	public PriorityType getPriorityType() {
+		return priorityType;
+	}
+
+	public void setPriorityType(PriorityType priorityType) {
+		this.priorityType = priorityType;
+	}
+
 
 	@Override
 	public String toString() {
@@ -65,9 +77,5 @@ public class TodoDocument implements Serializable, Comparable<TodoDocument> {
 	}
 
 
-	@Override
-	public int compareTo(TodoDocument another) {
-		return another.getCreateDate().compareTo(createDate);
-	}
 
 }
