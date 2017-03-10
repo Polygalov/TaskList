@@ -42,7 +42,11 @@
                 android:layout_marginRight="20dp"
                 android:background="@drawable/clear"
                 android:onClick="clearSearch" />
+
         </FrameLayout>
+        
+       
+        
 
         <ListView
             android:id="@+id/listTasks"
@@ -51,7 +55,7 @@
             android:layout_below="@id/frameSearch"
             android:layout_centerHorizontal="true"
             android:listSelector="@drawable/listview_row_selector"
-            android:textFilterEnabled="true" />
+            />
 
         <RelativeLayout
             android:id="@+id/emptyView"

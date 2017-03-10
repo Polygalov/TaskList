@@ -27,6 +27,6 @@
         </menu>
     </item>
     
-    <item android:id="@+id/delete" android:title="@string/save" android:showAsAction="always" android:icon="@drawable/ic_delete"></item>
-    <item android:id="@+id/save" android:title="@string/save" android:showAsAction="always" android:icon="@drawable/ic_save"></item>
+    <item android:id="@+id/delete" android:title="@string/delete" android:showAsAction="ifRoom|withText" android:icon="@drawable/ic_action_delete"></item>
+    <item android:id="@+id/save" android:title="@string/save" android:showAsAction="ifRoom|withText" android:icon="@drawable/ic_save"></item>
 </menu>

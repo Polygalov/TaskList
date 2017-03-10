@@ -1,11 +1,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
-   
+    <item
+        android:id="@+id/menu_delete_check"
+        android:icon="@drawable/delete_icon_selector"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/delete"
+        android:orderInCategory="1"
+        >
+    </item>
+    
+    
     <item
         android:id="@+id/menu_sort"
         android:icon="@drawable/sort_icon_selector"
         android:showAsAction="ifRoom|withText"
-        android:title="@string/sort">
+        android:title="@string/sort"
+        android:orderInCategory="2"
+        >
         <menu>
             <group android:checkableBehavior="single" >
                 <item
@@ -15,8 +26,7 @@
                 <item
                     android:id="@+id/menu_sort_name"
                     android:title="@string/sort_name"/>
-                
-                 <item
+                <item
                     android:id="@+id/menu_sort_priority"
                     android:title="@string/sort_priority"/>
             </group>
@@ -24,9 +34,10 @@
     </item>
     <item
         android:id="@+id/menu_new_task"
-        android:icon="@drawable/ic_new"
-        android:orderInCategory="100"
-        android:showAsAction="always"
-        android:title="@string/create"/>
+        android:icon="@drawable/new_task_icon_selector"
+        android:orderInCategory="3"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/create"
+        />
 
 </menu>

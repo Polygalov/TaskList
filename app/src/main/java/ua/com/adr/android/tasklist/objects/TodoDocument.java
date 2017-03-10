@@ -29,6 +29,7 @@ public class TodoDocument implements Serializable {
 	private String name;
 	private String content;
 	private Date createDate;
+	private boolean checked;
 
 	public String getName() {
 		return name;
@@ -74,6 +75,14 @@ public class TodoDocument implements Serializable {
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	public boolean isChecked() {
+		return checked;
+	}
+
+	public void setChecked(boolean checked) {
+		this.checked = checked;
 	}
 
 

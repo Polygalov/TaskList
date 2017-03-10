@@ -5,19 +5,22 @@ import ua.com.adr.android.tasklist.enums.PriorityType;
 import ua.com.adr.android.tasklist.objects.AppContext;
 import ua.com.adr.android.tasklist.objects.TodoDocument;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Paint;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
-
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
+import android.content.SharedPreferences.Editor;
+
 
 public class TodoDetails extends Activity {
 
@@ -75,30 +78,68 @@ public class TodoDetails extends Activity {
 	}
 
 	private void saveDocument() {
-		todoDocument.setName(getDocumentName());
 
 		if (actionType == AppContext.ACTION_UPDATE) {
 
-			// если изменился текст, тогда обновить дату сохранения
-			// если документ старый и текст не изменился
-			if (!txtTodoDetails.getText().toString().trim()
-					.equals(todoDocument.getContent())) {
-				todoDocument.setContent(txtTodoDetails.getText().toString()
-						.trim());
-				todoDocument.setCreateDate(new Date());
+			boolean edited = false;
+
+			SharedPreferences sharedPref = getSharedPreferences(
+					String.valueOf(todoDocument.getCreateDate().getTime()),
+					Context.MODE_PRIVATE);
+
+			Editor editor = sharedPref.edit();
+
+			// если документ старый и текст изменился
+			if (!txtTodoDetails.getText().toString().trim().equals(todoDocument.getContent())) {
+
+				todoDocument.setName(getDocumentName());
+				todoDocument.setContent(txtTodoDetails.getText().toString().trim());
+				editor.putString(AppContext.FIELD_CONTENT,todoDocument.getContent());
+				edited = true;
 			}
 
 			// если приоритет изменился
 			if (currentPriorityType != todoDocument.getPriorityType()) {
 				todoDocument.setPriorityType(currentPriorityType);
+				editor.putInt(AppContext.FIELD_PRIORITY_TYPE, todoDocument.getPriorityType().getIndex());
+				edited = true;
+			}
+
+			if (edited) {
+				String path = ((AppContext) getApplicationContext()).getPrefsDir();
+				File file = new File(path, todoDocument.getCreateDate().getTime()+".xml");
+
 				todoDocument.setCreateDate(new Date());
+				editor.putString(AppContext.FIELD_NAME, todoDocument.getName());
+				editor.putLong(AppContext.FIELD_CREATE_DATE, todoDocument.getCreateDate().getTime());
+				editor.commit();
+
+				file.renameTo(new File(path, todoDocument.getCreateDate().getTime()+".xml"));
+
 			}
 
 		} else if (actionType == AppContext.ACTION_NEW_TASK) {
+			todoDocument.setName(getDocumentName());
 			todoDocument.setCreateDate(new Date());
 			todoDocument.setContent(txtTodoDetails.getText().toString().trim());
 			todoDocument.setPriorityType(currentPriorityType);
+
+			SharedPreferences sharedPref = getSharedPreferences(
+					String.valueOf(todoDocument.getCreateDate().getTime()),
+					Context.MODE_PRIVATE);
+			SharedPreferences.Editor editor = sharedPref.edit();
+			editor.putString(AppContext.FIELD_CONTENT,
+					todoDocument.getContent());
+			editor.putString(AppContext.FIELD_NAME, todoDocument.getName());
+			editor.putLong(AppContext.FIELD_CREATE_DATE, todoDocument
+					.getCreateDate().getTime());
+			editor.putInt(AppContext.FIELD_PRIORITY_TYPE, todoDocument
+					.getPriorityType().getIndex());
+
+			editor.commit();
+
 			listDocuments.add(todoDocument);
+
 		}
 
 		finish();
@@ -136,12 +177,18 @@ public class TodoDetails extends Activity {
 
 	@SuppressLint("NewApi")
 	private void deleteDocument(TodoDocument todoDocument) {
+
+		// если открыт только что созданный документ - ничего не делаем, т.к. ничего и не сохраняли, чтобы удалять
+		// если открыт ранее созданный документ, тогда удаляем его
 		if (actionType == AppContext.ACTION_UPDATE) {
-			listDocuments.remove(docIndex);
+			Intent intent = new Intent(AppContext.RECEIVER_DELETE_DOCUMENT);
+			intent.putExtra(AppContext.DOC_INDEX, todoDocument.getNumber());
+			LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 		}
 
 		finish();
 	}
+
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -173,7 +220,6 @@ public class TodoDetails extends Activity {
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
 								deleteDocument(todoDocument);
-
 							}
 						});
 				builder.setNegativeButton(R.string.cancel,
@@ -192,7 +238,8 @@ public class TodoDetails extends Activity {
 			case R.id.menu_priority_middle:
 			case R.id.menu_priority_high: {
 				item.setChecked(true);
-				currentPriorityType = PriorityType.values()[Integer.valueOf(item.getTitleCondensed().toString())];
+				currentPriorityType = PriorityType.values()[Integer.valueOf(item
+						.getTitleCondensed().toString())];
 
 				return true;
 			}
@@ -205,3 +252,4 @@ public class TodoDetails extends Activity {
 	}
 
 }
+

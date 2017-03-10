@@ -3,6 +3,9 @@ package ua.com.adr.android.tasklist.activities;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
+
 import ua.com.adr.android.tasklist.R;
 import ua.com.adr.android.tasklist.adapters.TodoAdapter;
 import ua.com.adr.android.tasklist.objects.AppContext;
@@ -22,20 +25,34 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
+import android.graphics.Color;
+import android.support.v4.content.LocalBroadcastManager;
+import android.widget.CheckBox;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 public class TodoList extends Activity {
 
 	private ListView listviewTasks;
 	private MenuItem menuSort;
+	private MenuItem menuDelete;
+	private MenuItem menuCreate;
 
 	private EditText txtSearch;
 	private ArrayList<TodoDocument> listDocuments;
 	private Intent intent;
 	private TodoAdapter todoAdapter;
 
+	private CheckboxListener checkboxListener = new CheckboxListener();
+
 	private static Comparator<TodoDocument> comparator = TodoListComparator
 			.getDateComparator();// по-умолчанию сортировать по дате создания
 	// заметки
+
+	private BroadcastReceiver refreshListViewReceiver = new RefreshListViewReceiver();
 
 	@SuppressLint("NewApi")
 	@Override
@@ -46,7 +63,6 @@ public class TodoList extends Activity {
 		listviewTasks = (ListView) findViewById(R.id.listTasks);
 		listviewTasks.setOnItemClickListener(new ListViewClickListener());
 		listviewTasks.setEmptyView(findViewById(R.id.emptyView));
-		// listviewTasks.setTextFilterEnabled(false);
 
 		listDocuments = ((AppContext) getApplicationContext())
 				.getListDocuments();
@@ -58,45 +74,54 @@ public class TodoList extends Activity {
 
 		intent = new Intent(this, TodoDetails.class);
 
+		LocalBroadcastManager.getInstance(this).registerReceiver(
+				refreshListViewReceiver,
+				new IntentFilter(AppContext.RECEIVER_REFRESH_LISTVIEW));
+
 	}
+
+
 
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
 		sort();
-		checkSearchActive();
-		checkMenuActive();
 	}
 
-	private void checkSearchActive() {
+	private void checkControlsActive() {
+		if (menuSort == null || menuDelete == null)
+			return;
 		if (listDocuments.isEmpty()) {
+			menuDelete.setEnabled(false);
+			menuSort.setEnabled(false);
+			menuCreate.setEnabled(true);
 			txtSearch.setEnabled(false);
 		} else {
-			txtSearch.setEnabled(true);
-		}
-	}
-
-	private void checkMenuActive() {
-		if (menuSort == null) return;
-		if (listDocuments.isEmpty()) {
-			menuSort.setEnabled(false);
-		} else {
-			menuSort.setEnabled(true);
+			menuDelete.setEnabled(!indexesForDelete.isEmpty());
+			menuSort.setEnabled(indexesForDelete.isEmpty());
+			menuCreate.setEnabled(indexesForDelete.isEmpty());
+			txtSearch.setEnabled(indexesForDelete.isEmpty());
 		}
 	}
 
 	private void sort() {
+
+		indexesForDelete.clear();
 
 		Collections.sort(listDocuments, comparator);
 		updateIndexes();
 
 		// возможны более оптимальные решения: наследование от BaseAdapter,
 		// запуск в параллельном потоке
-		todoAdapter = new TodoAdapter(this, listDocuments);
+		todoAdapter = new TodoAdapter(this, listDocuments, checkboxListener);
 		listviewTasks.setAdapter(todoAdapter);
 
 		todoAdapter.getFilter().filter(txtSearch.getText());
+
+		checkControlsActive();
+
+		setTitle(getResources().getString(R.string.app_name)+" ("+listDocuments.size()+")");
 
 
 	}
@@ -107,13 +132,13 @@ public class TodoList extends Activity {
 		getMenuInflater().inflate(R.menu.todo_list, menu);
 
 		menuSort = menu.findItem(R.id.menu_sort);
+		menuDelete = menu.findItem(R.id.menu_delete_check);
+		menuCreate = menu.findItem(R.id.menu_new_task);
 
-		checkMenuActive();
+		checkControlsActive();
 
 		return true;
 	}
-
-
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -121,6 +146,7 @@ public class TodoList extends Activity {
 		if (item.isChecked()) {
 			return true;
 		}
+
 
 		switch (item.getItemId()) {
 			case R.id.menu_new_task: {
@@ -152,6 +178,22 @@ public class TodoList extends Activity {
 				comparator = TodoListComparator.getPriorityComparator();
 				sort();
 				item.setChecked(true);
+				return true;
+			}
+
+			case R.id.menu_delete_check: {
+
+				if (!indexesForDelete.isEmpty()) {
+
+					Intent intent = new Intent(AppContext.RECEIVER_DELETE_DOCUMENT);
+
+					intent.putIntegerArrayListExtra(AppContext.DOC_INDEXES,
+							new ArrayList<Integer>(indexesForDelete));
+					LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+				}
+
+
 				return true;
 			}
 
@@ -206,5 +248,50 @@ public class TodoList extends Activity {
 		}
 
 	}
+
+	private class RefreshListViewReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			sort();
+
+		}
+
+	}
+
+	private Set<Integer> indexesForDelete = new TreeSet<Integer>();
+
+	private class CheckboxListener implements View.OnClickListener {
+
+		@Override
+		public void onClick(View v) {
+			CheckBox checkBox = (CheckBox) v;
+			TodoDocument todoDocument = (TodoDocument) checkBox.getTag();
+			todoDocument.setChecked(checkBox.isChecked());
+
+			RelativeLayout ve = (RelativeLayout)v.getParent();
+
+			TextView txtTodoName = (TextView)ve.findViewById(R.id.txt_todo_name);
+			TextView txtTodoDate = (TextView)ve.findViewById(R.id.txt_todo_date);
+
+			if (checkBox.isChecked()) {
+				indexesForDelete.add(todoDocument.getNumber());
+				txtTodoName.setTextColor(Color.LTGRAY);
+				txtTodoDate.setTextColor(Color.LTGRAY);
+			} else {
+				indexesForDelete.remove(todoDocument.getNumber());
+				txtTodoName.setTextColor(Color.BLACK);
+				txtTodoDate.setTextColor(Color.BLACK);
+			}
+
+
+
+			checkControlsActive();
+
+		}
+
+	}
+
+
 
 }
