@@ -16,12 +16,13 @@ public class TodoDocument implements Serializable {
 		// TODO Auto-generated constructor stub
 	}
 
-	public TodoDocument(String name, String content, Date createDate, PriorityType priorityType) {
+	public TodoDocument(String name, String content, Date createDate, PriorityType priorityType, String imagePath) {
 		super();
 		this.name = name;
 		this.content = content;
 		this.createDate = createDate;
 		this.priorityType = priorityType;
+		this.imagePath = imagePath;
 	}
 
 	private PriorityType priorityType = PriorityType.LOW;
@@ -30,6 +31,7 @@ public class TodoDocument implements Serializable {
 	private String content;
 	private Date createDate;
 	private boolean checked;
+	private String imagePath;
 
 	public String getName() {
 		return name;
@@ -85,6 +87,14 @@ public class TodoDocument implements Serializable {
 		this.checked = checked;
 	}
 
+
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
+	}
 
 
 }

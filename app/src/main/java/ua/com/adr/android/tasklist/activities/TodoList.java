@@ -11,11 +11,15 @@ import ua.com.adr.android.tasklist.adapters.TodoAdapter;
 import ua.com.adr.android.tasklist.objects.AppContext;
 import ua.com.adr.android.tasklist.objects.TodoDocument;
 import ua.com.adr.android.tasklist.objects.TodoListComparator;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -23,14 +27,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.IntentFilter;
-import android.graphics.Color;
-import android.support.v4.content.LocalBroadcastManager;
-import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -49,8 +48,8 @@ public class TodoList extends Activity {
 	private CheckboxListener checkboxListener = new CheckboxListener();
 
 	private static Comparator<TodoDocument> comparator = TodoListComparator
-			.getDateComparator();// по-умолчанию сортировать по дате создания
-	// заметки
+			.getDateComparator();// ��-��������� ����������� �� ���� ��������
+									// �������
 
 	private BroadcastReceiver refreshListViewReceiver = new RefreshListViewReceiver();
 
@@ -80,15 +79,15 @@ public class TodoList extends Activity {
 
 	}
 
-
+	
 
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		sort();
+		sort();		
 	}
-
+	
 	private void checkControlsActive() {
 		if (menuSort == null || menuDelete == null)
 			return;
@@ -99,31 +98,29 @@ public class TodoList extends Activity {
 			txtSearch.setEnabled(false);
 		} else {
 			menuDelete.setEnabled(!indexesForDelete.isEmpty());
-			menuSort.setEnabled(indexesForDelete.isEmpty());
+			menuSort.setEnabled(listDocuments.size()>1);// ���� ������ ������ ���� - ���������� ����������
 			menuCreate.setEnabled(indexesForDelete.isEmpty());
 			txtSearch.setEnabled(indexesForDelete.isEmpty());
 		}
 	}
 
 	private void sort() {
-
+		
 		indexesForDelete.clear();
 
 		Collections.sort(listDocuments, comparator);
 		updateIndexes();
 
-		// возможны более оптимальные решения: наследование от BaseAdapter,
-		// запуск в параллельном потоке
+		// �������� ����� ����������� �������: ������������ �� BaseAdapter,
+		// ������ � ������������ ������
 		todoAdapter = new TodoAdapter(this, listDocuments, checkboxListener);
 		listviewTasks.setAdapter(todoAdapter);
 
 		todoAdapter.getFilter().filter(txtSearch.getText());
-
+		
 		checkControlsActive();
 
 		setTitle(getResources().getString(R.string.app_name)+" ("+listDocuments.size()+")");
-
-
 	}
 
 	@Override
@@ -147,58 +144,59 @@ public class TodoList extends Activity {
 			return true;
 		}
 
-
 		switch (item.getItemId()) {
-			case R.id.menu_new_task: {
+		case R.id.menu_new_task: {
 
-				Bundle bundle = new Bundle();
-				bundle.putInt(AppContext.ACTION_TYPE, AppContext.ACTION_NEW_TASK);
+			Bundle bundle = new Bundle();
+			bundle.putInt(AppContext.ACTION_TYPE, AppContext.ACTION_NEW_TASK);
 
-				intent.putExtras(bundle);
-				startActivity(intent);
+			intent.putExtras(bundle);
+			startActivity(intent);
 
-				return true;
+			return true;
+		}
+
+		case R.id.menu_sort_name: {
+			comparator = TodoListComparator.getNameComparator();
+			sort();
+			item.setChecked(true);
+			return true;
+		}
+
+		case R.id.menu_sort_date: {
+			comparator = TodoListComparator.getDateComparator();
+			sort();
+			item.setChecked(true);
+			return true;
+		}
+
+		case R.id.menu_sort_priority: {
+			comparator = TodoListComparator.getPriorityComparator();
+			sort();
+			item.setChecked(true);
+			return true;
+		}
+
+		case R.id.menu_delete_check: {
+
+			if (!indexesForDelete.isEmpty()) {
+
+				Intent intent = new Intent(AppContext.RECEIVER_DELETE_DOCUMENT);
+
+				intent.putIntegerArrayListExtra(AppContext.DOC_INDEXES,
+						new ArrayList<Integer>(indexesForDelete));
+				LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+				indexesForDelete.clear();
+
 			}
 
-			case R.id.menu_sort_name: {
-				comparator = TodoListComparator.getNameComparator();
-				sort();
-				item.setChecked(true);
-				return true;
-			}
 
-			case R.id.menu_sort_date: {
-				comparator = TodoListComparator.getDateComparator();
-				sort();
-				item.setChecked(true);
-				return true;
-			}
+			return true;
+		}
 
-			case R.id.menu_sort_priority: {
-				comparator = TodoListComparator.getPriorityComparator();
-				sort();
-				item.setChecked(true);
-				return true;
-			}
-
-			case R.id.menu_delete_check: {
-
-				if (!indexesForDelete.isEmpty()) {
-
-					Intent intent = new Intent(AppContext.RECEIVER_DELETE_DOCUMENT);
-
-					intent.putIntegerArrayListExtra(AppContext.DOC_INDEXES,
-							new ArrayList<Integer>(indexesForDelete));
-					LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-
-				}
-
-
-				return true;
-			}
-
-			default:
-				break;
+		default:
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -218,7 +216,7 @@ public class TodoList extends Activity {
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
-								long id) {
+				long id) {
 			Bundle bundle = new Bundle();
 			bundle.putInt(AppContext.ACTION_TYPE, AppContext.ACTION_UPDATE);
 			bundle.putInt(AppContext.DOC_INDEX, ((TodoDocument) parent
@@ -238,12 +236,12 @@ public class TodoList extends Activity {
 
 		@Override
 		public void beforeTextChanged(CharSequence s, int start, int count,
-									  int after) {
+				int after) {
 		}
 
 		@Override
 		public void onTextChanged(CharSequence s, int start, int before,
-								  int count) {
+				int count) {
 			todoAdapter.getFilter().filter(s);
 		}
 
@@ -270,12 +268,14 @@ public class TodoList extends Activity {
 			todoDocument.setChecked(checkBox.isChecked());
 
 			RelativeLayout ve = (RelativeLayout)v.getParent();
-
+			
 			TextView txtTodoName = (TextView)ve.findViewById(R.id.txt_todo_name);
 			TextView txtTodoDate = (TextView)ve.findViewById(R.id.txt_todo_date);
+			
 
+			
 			if (checkBox.isChecked()) {
-				indexesForDelete.add(todoDocument.getNumber());
+				indexesForDelete.add(todoDocument.getNumber());			
 				txtTodoName.setTextColor(Color.LTGRAY);
 				txtTodoDate.setTextColor(Color.LTGRAY);
 			} else {
@@ -283,15 +283,15 @@ public class TodoList extends Activity {
 				txtTodoName.setTextColor(Color.BLACK);
 				txtTodoDate.setTextColor(Color.BLACK);
 			}
-
-
-
+			
+			
+			
 			checkControlsActive();
 
 		}
 
 	}
-
-
+	
+	
 
 }

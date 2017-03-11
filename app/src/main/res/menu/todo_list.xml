@@ -3,20 +3,17 @@
     <item
         android:id="@+id/menu_delete_check"
         android:icon="@drawable/delete_icon_selector"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/delete"
         android:orderInCategory="1"
-        >
+        android:showAsAction="always"
+        android:title="@string/delete">
     </item>
-    
     
     <item
         android:id="@+id/menu_sort"
         android:icon="@drawable/sort_icon_selector"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/sort"
         android:orderInCategory="2"
-        >
+        android:showAsAction="always"
+        android:title="@string/sort">
         <menu>
             <group android:checkableBehavior="single" >
                 <item
@@ -32,12 +29,12 @@
             </group>
         </menu>
     </item>
-    <item
+    
+    <item       
         android:id="@+id/menu_new_task"
         android:icon="@drawable/new_task_icon_selector"
         android:orderInCategory="3"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/create"
-        />
+        android:showAsAction="always"
+        android:title="@string/create"/>
 
 </menu>

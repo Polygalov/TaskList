@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest package="ua.com.adr.android.tasklist"
           xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-feature android:name="android.hardware.camera" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -12,10 +16,7 @@
         <activity
             android:name="ua.com.adr.android.tasklist.activities.TodoList"
             android:label="@string/title_activity_todo_list"
-            android:windowSoftInputMode="stateHidden"
-
-
-            >
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,10 +30,14 @@
 
         <activity
             android:name="ua.com.adr.android.tasklist.activities.TodoDetails"
-            android:label="@string/title_activity_todo_details"
             android:windowSoftInputMode="stateHidden"
             android:launchMode="singleTop"
             >
+        </activity>
+        <activity
+            android:name="ua.com.adr.android.tasklist.activities.FullImage"
+            android:label="@string/title_activity_full_image"
+            android:theme="@android:style/Theme.Dialog">
         </activity>
     </application>
 

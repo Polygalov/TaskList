@@ -1,9 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     
-     <item
+    <item android:id="@+id/menu_take_photo" android:title="@string/photo" android:showAsAction="always" android:icon="@drawable/ic_action_photo"></item>
+    
+    <item
         android:id="@+id/menu_priority"
         android:icon="@drawable/priority_icon_selector"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="always"
         android:title="@string/priority">
         <menu>
             <group android:checkableBehavior="single" >
@@ -27,6 +29,6 @@
         </menu>
     </item>
     
-    <item android:id="@+id/delete" android:title="@string/delete" android:showAsAction="ifRoom|withText" android:icon="@drawable/ic_action_delete"></item>
-    <item android:id="@+id/save" android:title="@string/save" android:showAsAction="ifRoom|withText" android:icon="@drawable/ic_save"></item>
+    <item android:id="@+id/delete" android:title="@string/delete" android:showAsAction="always" android:icon="@drawable/ic_action_delete"></item>
+    <item android:id="@+id/save" android:title="@string/save" android:showAsAction="always" android:icon="@drawable/ic_save"></item>
 </menu>
